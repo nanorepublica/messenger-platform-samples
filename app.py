@@ -1,4 +1,4 @@
-from flask import Flask, request, make_response
+from flask import Flask, request, make_response, abort
 import os
 
 app = Flask(__name__)
@@ -16,7 +16,7 @@ def hello_world():
 def webhook():
     if request.args.get('hub.mode') == 'subscribe' and request.args.get('hub.mode') == os.getenv('VERIFY_TOKEN'):
         app.logger.info('Validating Webhook')
-        return make_response(request.args.get('hub.challenge'))
+        return make_response(request.args.get('hub.challenge'), 200)
     else:
         app.logger.error("Failed validation. Make sure the validation tokens match.")
-        return make_response(status=403)
+        abort(403)
