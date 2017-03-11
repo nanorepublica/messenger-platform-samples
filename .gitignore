@@ -1,6 +1,2 @@
-logs
-*.log
-pids
-node_modules
-.npm
-*.dat
+*.pyc
+*.pyo
