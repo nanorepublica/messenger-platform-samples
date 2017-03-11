@@ -14,7 +14,8 @@ def hello_world():
     
 @app.route('/webhook')
 def webhook():
-    if request.args.get('hub.mode') == 'subscribe' and request.args.get('hub.mode') == os.getenv('VERIFY_TOKEN'):
+    raise
+    if request.args.get('hub.mode') == 'subscribe' and request.args.get('hub.verify_token') == os.getenv('VERIFY_TOKEN'):
         app.logger.info('Validating Webhook')
         return make_response(request.args.get('hub.challenge'), 200)
     else:
