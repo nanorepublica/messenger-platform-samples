@@ -1,1 +1,1 @@
-web: flask run
+web: waitress-serve --port=$PORT --threads=$WSGI_THREADS app:app
