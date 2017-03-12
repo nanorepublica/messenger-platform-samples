@@ -14,7 +14,7 @@ def hello_world():
     return 'Hello, World!'
     
     
-@app.route('/webhook')
+@app.route('/webhook', methods=['GET', 'POST'])
 def webhook():
     if request.method == 'GET':
         if request.args.get('hub.mode') == 'subscribe' and request.args.get('hub.verify_token') == os.getenv('VERIFY_TOKEN'):
