@@ -37,7 +37,7 @@ def webhook():
             else:
                 app.logger.info('no more entries...')
                 
-        make_response('all good!', 200)
+        return make_response('all good!', 200)
         
         
 def recieved_message(event):
