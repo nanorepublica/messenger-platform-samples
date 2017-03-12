@@ -17,9 +17,9 @@ def hello_world():
 @app.route('/webhook', methods=['GET', 'POST'])
 def webhook():
     if request.method == 'GET':
-        subscribe_to_webhook()
+        return subscribe_to_webhook()
     elif request.method == 'POST':
-        process_webhook()
+        return process_webhook()
 
 
 def subscribe_to_webhook():
