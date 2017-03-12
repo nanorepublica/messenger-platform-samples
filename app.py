@@ -41,12 +41,12 @@ def webhook():
         
         
 def recieved_message(event):
-    app.logger.info("Message Data: %s", event.message)
+    app.logger.info("Message Data: %s", event.get('message'))
     
-    senderID = event.get('sender', {}).get('id');
-    recipientID = event.get('recipient', {}).get('id');
-    timeOfMessage = event.get('timestamp');
-    message = event.get('message');
+    senderID = event.get('sender', {}).get('id')
+    recipientID = event.get('recipient', {}).get('id')
+    timeOfMessage = event.get('timestamp')
+    message = event.get('message')
 
     app.logger.info("Received message for user %d and page %d at %d with message:", 
                     senderID, recipientID, timeOfMessage)
