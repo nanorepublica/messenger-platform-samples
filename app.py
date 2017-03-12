@@ -98,6 +98,7 @@ def callSendAPI(messageData):
     response = requests.post(uri, params=qs, json=messageData)
 
     if response.ok:
+        app.logger.info(response.json())
         recipientId = response.json().recipient_id
         messageId = response.json().message_id
         app.logger.info("Successfully sent generic message with id %s to recipient %s", messageId, recipientId)
