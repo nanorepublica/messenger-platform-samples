@@ -92,7 +92,9 @@ def sendTextMessage(recipientId, messageText):
 
 def callSendAPI(messageData):
     uri = 'https://graph.facebook.com/v2.6/me/messages'
-    qs = {'access_token': os.getenv('PAGE_ACCESS_TOKEN')},
+    qs = {
+        'access_token': os.getenv('PAGE_ACCESS_TOKEN')
+    }
     response = requests.post(uri, params=qs, json=messageData)
 
     if response.ok:
