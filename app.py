@@ -19,21 +19,7 @@ def webhook():
     if request.method == 'GET':
         subscribe_to_webhook()
     elif request.method == 'POST':
-        data = request.get_json()
-        if data.get('object') == 'page':
-            for entry in data.get('entry', []):
-                page_id = entry.get('id')
-                time = entry.get('time')
-                for event in entry.get('messaging', []):
-                    if 'message' in event:
-                        recieved_message(event)
-                    elif 'postback' in event:
-                        receivedPostback(event)
-                    else:
-                        app.logger.warning('Webhook received unknown event: %s', event)
-            app.logger.info('no more entries...')
-                
-        return make_response('all good!', 200)
+        process_webhook()
 
 
 def subscribe_to_webhook():
@@ -45,43 +31,60 @@ def subscribe_to_webhook():
         abort(403)
 
 
+def process_webhook():
+    data = request.get_json()
+    if data.get('object') == 'page':
+        for entry in data.get('entry', []):
+            page_id = entry.get('id')
+            time = entry.get('time')
+            for event in entry.get('messaging', []):
+                if 'message' in event:
+                    recieved_message(event)
+                elif 'postback' in event:
+                    received_postback(event)
+                else:
+                    app.logger.warning('Webhook received unknown event: %s', event)
+        app.logger.info('no more entries...')
+    return make_response('all good!', 200)
+
+
 def recieved_message(event):
     app.logger.info("Message Data: %s", event.get('message'))
     
-    senderID = event.get('sender', {}).get('id')
-    recipientID = event.get('recipient', {}).get('id')
-    timeOfMessage = event.get('timestamp')
+    sender_id = event.get('sender', {}).get('id')
+    recipient_id = event.get('recipient', {}).get('id')
+    time_of_message = event.get('timestamp')
     message = event.get('message')
 
     app.logger.info("Received message for user %d and page %d at %d with message:", 
-                    senderID, recipientID, timeOfMessage)
+                    sender_id, recipient_id, time_of_message)
     app.logger.info(json.dumps(message))
 
-    messageId = message.get('mid')
-    messageText = message.get('text')
-    messageAttachments = message.get('attachments')
+    message_id = message.get('mid')
+    message_text = message.get('text')
+    message_attachments = message.get('attachments')
 
     message_types = {
-        'generic': sendGenericMessage
+        'generic': send_generic_message
     }
 
-    if messageText:
+    if message_text:
         # If we receive a text message, check to see if it matches a keyword
         # and send back the example. Otherwise, just echo the text we received.
-        func = message_types.get(messageText, sendTextMessage)
+        func = message_types.get(message_text, send_text_message)
         args = [
-            senderID,
-            messageText
+            sender_id,
+            message_text
         ]
         func(*args)
-    elif messageAttachments:
-        sendTextMessage(senderID, "Message with attachment received")
-        
+    elif message_attachments:
+        send_text_message(sender_id, "Message with attachment received")
 
-def sendGenericMessage(recipientId, messageText):
-    messageData = {
+
+def send_generic_message(recipient_id, _message_text):
+    message_data = {
         'recipient': {
-            'id': recipientId
+            'id': recipient_id
         },
         'message': {
             'attachment': {
@@ -92,7 +95,7 @@ def sendGenericMessage(recipientId, messageText):
                         {
                             'title': "rift",
                             'subtitle': "Next-generation virtual reality",
-                            'item_url': "https://www.oculus.com/en-us/rift/",               
+                            'item_url': "https://www.oculus.com/en-us/rift/",
                             'image_url': "http://messengerdemo.parseapp.com/img/rift.png",
                             'buttons': [
                                 {
@@ -130,51 +133,51 @@ def sendGenericMessage(recipientId, messageText):
             }
         }
     }
-    callSendAPI(messageData)
+    call_send_api(message_data)
 
 
-def sendTextMessage(recipientId, messageText):
-    messageData = {
+def send_text_message(recipient_id, message_text):
+    message_data = {
         'recipient': {
-            'id': recipientId
+            'id': recipient_id
         },
         'message': {
-            'text': messageText
+            'text': message_text
         }
     }
-    callSendAPI(messageData)
+    call_send_api(message_data)
 
 
-def callSendAPI(messageData):
+def call_send_api(message_data):
     uri = 'https://graph.facebook.com/v2.6/me/messages'
     qs = {
         'access_token': os.getenv('PAGE_ACCESS_TOKEN')
     }
-    response = requests.post(uri, params=qs, json=messageData)
+    response = requests.post(uri, params=qs, json=message_data)
 
     if response.ok:
-        app.logger.info(response.json())
-        # recipientId = response.json().recipient_id
-        # messageId = response.json().message_id
-        # app.logger.info("Successfully sent generic message with id %s to recipient %s", messageId, recipientId)
+        app.logger.error(response.json())
+        # recipient_id = response.json().recipient_id
+        # message_id = response.json().message_id
+        # app.logger.info("Successfully sent generic message with id %s to recipient %s", message_id, recipient_id)
     else:
         app.logger.error("Unable to send message.")
         app.logger.error(response)
         app.logger.error(response.content)
 
 
-def receivedPostback(event):
-    senderID = event.get('sender', {}).get('id')
-    recipientID = event.get('recipient', {}).get('id')
-    timeOfPostback = event.get('timestamp')
+def received_postback(event):
+    sender_id = event.get('sender', {}).get('id')
+    recipient_id = event.get('recipient', {}).get('id')
+    time_of_postback = event.get('timestamp')
 
-    # The 'payload' param is a developer-defined field which is set in a postback 
+    # The 'payload' param is a developer-defined field which is set in a postback
     # button for Structured Messages.
     payload = event.get('postback', {}).get('payload')
 
-    app.logger.info("Received postback for user %d and page %d with payload '%s' at %d", 
-                    senderID, recipientID, payload, timeOfPostback)
+    app.logger.info("Received postback for user %d and page %d with payload '%s' at %d",
+                    sender_id, recipient_id, payload, time_of_postback)
 
-    # When a postback is called, we'll send a message back to the sender to 
+    # When a postback is called, we'll send a message back to the sender to
     # let them know it was successful
-    sendTextMessage(senderID, "Postback called")
+    send_text_message(sender_id, "Postback called")
