@@ -99,9 +99,9 @@ def callSendAPI(messageData):
 
     if response.ok:
         app.logger.info(response.json())
-        recipientId = response.json().recipient_id
-        messageId = response.json().message_id
-        app.logger.info("Successfully sent generic message with id %s to recipient %s", messageId, recipientId)
+        # recipientId = response.json().recipient_id
+        # messageId = response.json().message_id
+        # app.logger.info("Successfully sent generic message with id %s to recipient %s", messageId, recipientId)
     else:
         app.logger.error("Unable to send message.")
         app.logger.error(response)
