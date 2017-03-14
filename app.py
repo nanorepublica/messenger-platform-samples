@@ -56,58 +56,6 @@ def process_webhook():
     return make_response('all good!', 200)
 
 
-def recieved_message(event):
-    '''decision tree on what message to reply with...'''
-    app.logger.info("Message Data: %s", event.get('message'))
-
-    sender_id = event.get('sender', {}).get('id')
-    recipient_id = event.get('recipient', {}).get('id')
-    time_of_message = event.get('timestamp')
-    message = event.get('message')
-
-    app.logger.info("Received message for user %d and page %d at %d with message:",
-                    sender_id, recipient_id, time_of_message)
-    app.logger.info(json.dumps(message))
-
-    # message_id = message.get('mid')
-    message_text = message.get('text')
-    message_attachments = message.get('attachments')
-
-    message_types = {
-        'generic': send_generic_message
-    }
-
-    if message_text:
-        # If we receive a text message, check to see if it matches a keyword
-        # and send back the example. Otherwise, just echo the text we received.
-        func = message_types.get(message_text, send_text_message)
-        args = [
-            sender_id,
-            message_text
-        ]
-        func(*args)
-    elif message_attachments:
-        send_text_message(message_text="Message with attachment received", recipient_id=sender_id)
-
-
-def received_postback(event):
-    '''process postback response from the bot'''
-    sender_id = event.get('sender', {}).get('id')
-    recipient_id = event.get('recipient', {}).get('id')
-    time_of_postback = event.get('timestamp')
-
-    # The 'payload' param is a developer-defined field which is set in a postback
-    # button for Structured Messages.
-    payload = event.get('postback', {}).get('payload')
-
-    app.logger.info("Received postback for user %d and page %d with payload '%s' at %d",
-                    sender_id, recipient_id, payload, time_of_postback)
-
-    # When a postback is called, we'll send a message back to the sender to
-    # let them know it was successful
-    send_text_message(message_text="Postback called", recipient_id=sender_id)
-
-
 def send(func):
     'decorator to send a message to the graph API'
     @wraps(func)
@@ -141,6 +89,7 @@ def call_send_api(message_data):
         app.logger.error("Unable to send message.")
         app.logger.error(response)
         app.logger.error(response.content)
+
 
 @send
 def send_generic_message(*_args, **_kwargs):
@@ -203,3 +152,55 @@ def send_text_message(*args, **kwargs):
             'text': kwargs.get('message_text')
         }
     }
+
+
+def recieved_message(event):
+    '''decision tree on what message to reply with...'''
+    app.logger.info("Message Data: %s", event.get('message'))
+
+    sender_id = event.get('sender', {}).get('id')
+    recipient_id = event.get('recipient', {}).get('id')
+    time_of_message = event.get('timestamp')
+    message = event.get('message')
+
+    app.logger.info("Received message for user %d and page %d at %d with message:",
+                    sender_id, recipient_id, time_of_message)
+    app.logger.info(json.dumps(message))
+
+    # message_id = message.get('mid')
+    message_text = message.get('text')
+    message_attachments = message.get('attachments')
+
+    message_types = {
+        'generic': send_generic_message
+    }
+
+    if message_text:
+        # If we receive a text message, check to see if it matches a keyword
+        # and send back the example. Otherwise, just echo the text we received.
+        func = message_types.get(message_text, send_text_message)
+        args = [
+            sender_id,
+            message_text
+        ]
+        func(*args)
+    elif message_attachments:
+        send_text_message(message_text="Message with attachment received", recipient_id=sender_id)
+
+
+def received_postback(event):
+    '''process postback response from the bot'''
+    sender_id = event.get('sender', {}).get('id')
+    recipient_id = event.get('recipient', {}).get('id')
+    time_of_postback = event.get('timestamp')
+
+    # The 'payload' param is a developer-defined field which is set in a postback
+    # button for Structured Messages.
+    payload = event.get('postback', {}).get('payload')
+
+    app.logger.info("Received postback for user %d and page %d with payload '%s' at %d",
+                    sender_id, recipient_id, payload, time_of_postback)
+
+    # When a postback is called, we'll send a message back to the sender to
+    # let them know it was successful
+    send_text_message(message_text="Postback called", recipient_id=sender_id)
