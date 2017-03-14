@@ -90,19 +90,22 @@ def recieved_message(event):
         send_text_message(message_text="Message with attachment received", recipient_id=sender_id)
 
 
-def send(func):
-    'decorator to send a message to the graph API'
-    @wraps(func)
-    def _inner(*args, **kwargs):
-        'inner function'
-        if 'recipient_id' in kwargs:
-            recipient_data = {
-                'id': kwargs.get('recipient_id')
-            }
-        message_data = func(*args, **kwargs)
-        if 'recipient_id' in kwargs:
-            message_data['recipient'] = recipient_data
-            call_send_api(message_data)
+def received_postback(event):
+    '''process postback response from the bot'''
+    sender_id = event.get('sender', {}).get('id')
+    recipient_id = event.get('recipient', {}).get('id')
+    time_of_postback = event.get('timestamp')
+
+    # The 'payload' param is a developer-defined field which is set in a postback
+    # button for Structured Messages.
+    payload = event.get('postback', {}).get('payload')
+
+    app.logger.info("Received postback for user %d and page %d with payload '%s' at %d",
+                    sender_id, recipient_id, payload, time_of_postback)
+
+    # When a postback is called, we'll send a message back to the sender to
+    # let them know it was successful
+    send_text_message(message_text="Postback called", recipient_id=sender_id)
 
 
 @send
@@ -168,6 +171,21 @@ def send_text_message(*args, **kwargs):
     }
 
 
+def send(func):
+    'decorator to send a message to the graph API'
+    @wraps(func)
+    def _inner(*args, **kwargs):
+        'inner function'
+        if 'recipient_id' in kwargs:
+            recipient_data = {
+                'id': kwargs.get('recipient_id')
+            }
+        message_data = func(*args, **kwargs)
+        if 'recipient_id' in kwargs:
+            message_data['recipient'] = recipient_data
+            call_send_api(message_data)
+
+
 def call_send_api(message_data):
     '''call send api and handle the response'''
     uri = 'https://graph.facebook.com/v2.6/me/messages'
@@ -186,21 +204,3 @@ def call_send_api(message_data):
         app.logger.error("Unable to send message.")
         app.logger.error(response)
         app.logger.error(response.content)
-
-
-def received_postback(event):
-    '''process postback response from the bot'''
-    sender_id = event.get('sender', {}).get('id')
-    recipient_id = event.get('recipient', {}).get('id')
-    time_of_postback = event.get('timestamp')
-
-    # The 'payload' param is a developer-defined field which is set in a postback
-    # button for Structured Messages.
-    payload = event.get('postback', {}).get('payload')
-
-    app.logger.info("Received postback for user %d and page %d with payload '%s' at %d",
-                    sender_id, recipient_id, payload, time_of_postback)
-
-    # When a postback is called, we'll send a message back to the sender to
-    # let them know it was successful
-    send_text_message(message_text="Postback called", recipient_id=sender_id)
