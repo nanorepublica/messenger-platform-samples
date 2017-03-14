@@ -178,13 +178,13 @@ def recieved_message(event):
     if message_text:
         # If we receive a text message, check to see if it matches a keyword
         # and send back the example. Otherwise, just echo the text we received.
-        func = message_types.get(message_text, send_text_message)
+        message_func = message_types.get(message_text, send_text_message)
         args = [
             sender_id,
             message_text
         ]
-        print args, func
-        func(*args)
+        print args, message_func
+        message_func(*args)
     elif message_attachments:
         send_text_message(message_text="Message with attachment received", recipient_id=sender_id)
 
