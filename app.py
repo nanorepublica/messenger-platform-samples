@@ -183,6 +183,7 @@ def recieved_message(event):
             sender_id,
             message_text
         ]
+        print args, func
         func(*args)
     elif message_attachments:
         send_text_message(message_text="Message with attachment received", recipient_id=sender_id)
