@@ -108,6 +108,40 @@ def received_postback(event):
     send_text_message(message_text="Postback called", recipient_id=sender_id)
 
 
+def send(func):
+    'decorator to send a message to the graph API'
+    @wraps(func)
+    def _inner(*args, **kwargs):
+        'inner function'
+        if 'recipient_id' in kwargs:
+            recipient_data = {
+                'id': kwargs.get('recipient_id')
+            }
+        message_data = func(*args, **kwargs)
+        if 'recipient_id' in kwargs:
+            message_data['recipient'] = recipient_data
+            call_send_api(message_data)
+
+
+def call_send_api(message_data):
+    '''call send api and handle the response'''
+    uri = 'https://graph.facebook.com/v2.6/me/messages'
+    query_string = {
+        'access_token': os.getenv('PAGE_ACCESS_TOKEN')
+    }
+    response = requests.post(uri, params=query_string, json=message_data)
+
+    if response.ok:
+        app.logger.error(response.json())
+        # recipient_id = response.json().recipient_id
+        # message_id = response.json().message_id
+        # app.logger.info("Successfully sent generic message with id %s to recipient %s",
+        #                 message_id, recipient_id)
+    else:
+        app.logger.error("Unable to send message.")
+        app.logger.error(response)
+        app.logger.error(response.content)
+
 @send
 def send_generic_message(*_args, **_kwargs):
     'todo: improve - send a templated message'
@@ -169,38 +203,3 @@ def send_text_message(*args, **kwargs):
             'text': kwargs.get('message_text')
         }
     }
-
-
-def send(func):
-    'decorator to send a message to the graph API'
-    @wraps(func)
-    def _inner(*args, **kwargs):
-        'inner function'
-        if 'recipient_id' in kwargs:
-            recipient_data = {
-                'id': kwargs.get('recipient_id')
-            }
-        message_data = func(*args, **kwargs)
-        if 'recipient_id' in kwargs:
-            message_data['recipient'] = recipient_data
-            call_send_api(message_data)
-
-
-def call_send_api(message_data):
-    '''call send api and handle the response'''
-    uri = 'https://graph.facebook.com/v2.6/me/messages'
-    query_string = {
-        'access_token': os.getenv('PAGE_ACCESS_TOKEN')
-    }
-    response = requests.post(uri, params=query_string, json=message_data)
-
-    if response.ok:
-        app.logger.error(response.json())
-        # recipient_id = response.json().recipient_id
-        # message_id = response.json().message_id
-        # app.logger.info("Successfully sent generic message with id %s to recipient %s",
-        #                 message_id, recipient_id)
-    else:
-        app.logger.error("Unable to send message.")
-        app.logger.error(response)
-        app.logger.error(response.content)
