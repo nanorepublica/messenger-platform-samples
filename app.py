@@ -69,6 +69,7 @@ def send(func):
         if 'recipient_id' in kwargs:
             message_data['recipient'] = recipient_data
             call_send_api(message_data)
+    return _inner
 
 
 def call_send_api(message_data):
