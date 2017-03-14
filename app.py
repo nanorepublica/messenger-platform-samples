@@ -178,6 +178,7 @@ def recieved_message(event):
     if message_text:
         # If we receive a text message, check to see if it matches a keyword
         # and send back the example. Otherwise, just echo the text we received.
+        print send_text_message
         message_func = message_types.get(message_text, send_text_message)
         args = [
             sender_id,
