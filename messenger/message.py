@@ -182,7 +182,7 @@ class Message(object):
             raise NoRecipientException()
         print(self.message)
         assert 'text' in self.message or 'attachment' in self.message, 'Please specify either text or an attachment in the message'
-        assert 'text' in self.message and 'attachment' in self.message, 'text and attachment are mutually exclusive, please specify only one'
+        assert not('text' in self.message and 'attachment' in self.message), 'text and attachment are mutually exclusive, please specify only one'
         self.client.message = self.message
         self.client.call_api()
         return self
