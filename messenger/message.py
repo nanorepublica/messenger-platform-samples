@@ -90,6 +90,7 @@ class SendAPI(object):
 
     def call_api(self):
         'wrapped to call api with the payload above'
+        print(self.payload)
         return self.call_send_api_raw(self.payload)
 
     def call_send_api_raw(self, message_data):
@@ -180,7 +181,6 @@ class Message(object):
             self.set_recipient(recipient)
         elif self.client.recipient is None:
             raise NoRecipientException()
-        print(self.message)
         assert 'text' in self.message or 'attachment' in self.message, 'Please specify either text or an attachment in the message'
         assert not('text' in self.message and 'attachment' in self.message), 'text and attachment are mutually exclusive, please specify only one'
         self.client.message = self.message
