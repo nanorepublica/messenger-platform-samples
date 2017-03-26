@@ -2,22 +2,15 @@
 import os
 from functools import wraps
 import json
+from time import sleep
 import requests
 from flask import Flask, request, make_response, abort
 
-from messenger.message import TextMessage
+from messenger.message import TextMessage, SenderAction
 
 app = Flask(__name__)
 app.config.from_object('settings.dev')
 # manual overrides below
-
-# app.config.from_envvar('APP_SETTINGS', silent=True)
-
-
-@app.route('/')
-def hello_world():
-    '''index page - should explain/document the bot?'''
-    return 'Hello, World!'
 
 
 @app.route('/webhook', methods=['GET', 'POST'])
@@ -147,16 +140,6 @@ def send_generic_message(*_args, **_kwargs):
     }
 
 
-@send
-def send_text_message(*args, **kwargs):
-    '''send a simple text message'''
-    return {
-        'message': {
-            'text': kwargs.get('message_text')
-        }
-    }
-
-
 def recieved_message(event):
     '''decision tree on what message to reply with...'''
     app.logger.info("Message Data: %s", event.get('message'))
@@ -175,8 +158,16 @@ def recieved_message(event):
     message_attachments = message.get('attachments')
 
     message_types = {
-        'generic': send_generic_message
+        'generic': send_generic_message,
     }
+
+    joke = [
+        TextMessage(text='Knock Knock'),
+        TextMessage(text="Who's there?"),
+        TextMessage(text="Doctor"),
+        TextMessage(text="Doctor Who?"),
+    ]
+    action = SenderAction()
 
     if message_text:
         # If we receive a text message, check to see if it matches a keyword
@@ -185,6 +176,13 @@ def recieved_message(event):
         if message_func:
             message_func(sender_id, message_text)
             msg = None
+        elif 'joke' in message_text:
+            for line in joke:
+                action.typing_on = True
+                sleep(0.5)
+                action.typing_off = True
+                line.send(recipient=sender_id)
+                action.mark_seen = True
         else:
             msg = TextMessage(text=message_text).send(recipient=sender_id)
     elif message_attachments:

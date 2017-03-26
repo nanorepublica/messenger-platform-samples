@@ -136,6 +136,8 @@ class SenderAction(SendAPI):
 
     @mark_seen.setter
     def mark_seen(self, value):
+        self.setter('_typing_on', not value)
+        self.setter('_typing_off', not value)
         self.setter('_mark_seen', value)
 
     @property
@@ -145,6 +147,8 @@ class SenderAction(SendAPI):
 
     @typing_on.setter
     def typing_on(self, value):
+        self.setter('_typing_off', not value)
+        self.setter('_mark_seen', not value)
         self.setter('_typing_on', value)
 
     @property
@@ -154,6 +158,8 @@ class SenderAction(SendAPI):
 
     @typing_off.setter
     def typing_off(self, value):
+        self.setter('_typing_on', not value)
+        self.setter('_mark_seen', not value)
         self.setter('_typing_off', value)
 
 
