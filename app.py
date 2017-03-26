@@ -181,7 +181,7 @@ def recieved_message(event):
                 action.typing_on = True
                 sleep(0.5)
                 action.typing_off = True
-                line.send(recipient=sender_id)
+                msg = line.send(recipient=sender_id)
                 action.mark_seen = True
         else:
             msg = TextMessage(text=message_text).send(recipient=sender_id)
