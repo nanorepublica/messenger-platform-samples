@@ -194,6 +194,9 @@ class Message(object):
     @message.setter
     def message(self, value):
         'Implement in subclass'
+        self.set_message(value)
+
+    def set_message(self, value):
         raise NotImplementedError
 
 
@@ -210,9 +213,8 @@ class TextMessage(Message):
         else:
             raise NoContentException()
 
-    @message.setter
-    def message(self, value):
-        'Implement in subclass'
+    def set_message(self, value):
+        'Used in the .message property'
         self._message = {
             'text': value
         }
@@ -244,9 +246,8 @@ class AttachmentMessage(Message):
         else:
             raise NoContentException()
 
-    @message.setter
-    def message(self, value):
-        'Implement in subclass'
+    def set_message(self, value):
+        'Used in the .message property'
         self._message = {
             'attachment': value
         }
