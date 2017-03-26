@@ -77,7 +77,7 @@ class SendAPI(object):
     def payload(self):
         'return the constructed payload to send to the API'
         _payload = {
-            'recipient': self.recipient,
+            'recipient': self._recipient,
         }
         if self.notification_type:
             _payload['notification_type'] = self.notification_type
