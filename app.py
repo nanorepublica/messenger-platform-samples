@@ -5,6 +5,8 @@ import json
 import requests
 from flask import Flask, request, make_response, abort
 
+from messenger.message import TextMessage
+
 app = Flask(__name__)
 app.config.from_object('settings.dev')
 # manual overrides below
@@ -179,16 +181,15 @@ def recieved_message(event):
     if message_text:
         # If we receive a text message, check to see if it matches a keyword
         # and send back the example. Otherwise, just echo the text we received.
-        print send_text_message
-        message_func = message_types.get(message_text, send_text_message)
-        args = [
-            sender_id,
-            message_text
-        ]
-        print args, message_func
-        message_func(*args)
+        message_func = message_types.get(message_text)
+        if message_func:
+            message_func(sender_id, message_text)
+            msg = None
+        else:
+            msg = TextMessage(text=message_text).send(recipient=sender_id)
     elif message_attachments:
-        send_text_message(message_text="Message with attachment received", recipient_id=sender_id)
+        msg = TextMessage(text="Message with attachment received").send(recipient=sender_id)
+    return msg
 
 
 def received_postback(event):
@@ -206,4 +207,4 @@ def received_postback(event):
 
     # When a postback is called, we'll send a message back to the sender to
     # let them know it was successful
-    send_text_message(message_text="Postback called", recipient_id=sender_id)
+    return TextMessage(text="Postback called").send(recipient=sender_id)
