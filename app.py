@@ -180,9 +180,9 @@ def recieved_message(event):
             for line in joke:
                 action.typing_on = True
                 sleep(0.5)
-                action.typing_off = True
                 msg = line.send(recipient=sender_id)
-                action.mark_seen = True
+                action.typing_off = True
+                sleep(1)
         else:
             msg = TextMessage(text=message_text).send(recipient=sender_id)
     elif message_attachments:
